@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+# -*-coding:utf-8 -*-
+"""Module to work with sql database."""
+
+import os
+import sqlite3
+
+sql_wipe_table = "DELETE FROM {:s}"
+
+sql_insert_query = ("INSERT OR REPLACE INTO {:s} "
+                    "(topic, posts) VALUES ({:d},{:d})")
+
+sql_delete_row = "DELETE FROM {:s} WHERE topic = {:d}"
+
+sql_read_query = "SELECT posts FROM {:s} WHERE topic = {:d}"
+
+create_table = \
+    "CREATE TABLE IF NOT EXISTS {:s} (topic INT PRIMARY KEY, posts INT)"
+
+
+class Database:
+    """Class to work with sql database."""
+
+    def __init__(self, file, table):
+        """Init database with file and table name."""
+        self.file = file
+        self.table = table
+
+    # Run SQL query
+    def _run_query(self, sql, data=None, receive=False):
+        """Execute sql request."""
+        conn = sqlite3.connect(self.file)
+        cursor = conn.cursor()
+        if data:
+            cursor.execute(sql, data)
+        else:
+            cursor.execute(sql)
+
+        if receive:
+            return cursor.fetchall()
+        else:
+            conn.commit()
+
+        conn.close()
+
+    def _read_db(self, topic):
+        """Return specific topic row from database."""
+        read_query = sql_read_query.format(self.table, int(topic))
+        return self._run_query(read_query, receive=True)
+
+    # Create database and table
+    def first_time_db(self):
+        """Create table if database."""
+        self._run_query(create_table.format(self.table))
+
+    # Check and create Database
+    def check_db(self):
+        """Check if database file exists.
+
+        If not, create it and create table.
+
+        """
+        if not os.path.isfile(self.file):
+            self.first_time_db()
+
+    # wipe table
+    def wipe_db_table(self):
+        """Wipe databasse."""
+        self._run_query(sql_wipe_table.format(self.table))
+
+    def insert_db_topic(self, topic_id, nb_posts):
+        """Add row in database.
+
+        Args:
+            topic_id (string): topic id
+            nb_posts (int): number of posts
+
+        """
+
+    def delete_db_row(self, topic_id):
+        """Delete row in database for topic_id."""
+        # db._run_query(sql_delete_row % (int(topic_id)))
+        self._run_query(sql_delete_row.format(self.table, int(topic_id)))
+
+    # Retrieve index of already purged message in the database
+    def get_post_done(self, topic):
+        """Return number of posts already processed (from database).
+
+        Args:
+            topic (string): topic number id
+
+        Returns:
+            int: number of posts already processed
+
+        """
+        result = self._read_db(topic)
+        if not result:
+            return 0
+        else:
+            return result[0][0]
