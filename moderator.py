@@ -2,31 +2,38 @@
 # -*-coding:utf-8 -*-
 """Check if words appear in a forum."""
 
-import sys
-
 # import datetime
 # import re
-from utils.phpbb import PhpBB
-from utils.settings import Settings
-from utils.db import Database  # My own code in utils folder
+import sqlite3
+import sys
+
+from sqlite_utils import Database
+from sqlite_utils.db import NotFoundError
+
 from utils import tools  # My own code in utils folder
 from utils.consts import Const
+from utils.phpbb import PhpBB
 from utils.post import Viewtopicurl
+from utils.settings import Settings
 
-cfg_file = ".dctrad.cfg"
-db_file = ".modo.db"
-cfg_forum = "dctrad_modo"
-db_table = "modo"
+CFG_FILE = ".dctrad.cfg"
+DB_FILE = ".modo.db"
+CFG_FORUM = "dctrad_modo"
+DB_TABLE = "modo"
 
 
 try:
     # Check or create database file
-    db = Database(db_file, db_table)
-    db.check_db()
-
+    db = Database(DB_FILE)
+    try:
+        table = db.table(DB_TABLE).create({"topic": int, "posts": int},
+                                          pk="topic")
+    except sqlite3.OperationalError:
+        # Table already exists
+        table = db[DB_TABLE]
     # Config
-    cfg = Settings(cfg_file)
-    if cfg.load(cfg_forum, Const.cfg_opts_modo):
+    cfg = Settings(CFG_FILE)
+    if cfg.load(CFG_FORUM, Const.cfg_opts_modo):
         phpbb = PhpBB(cfg.host)
         words_list = tools.configsplit(cfg.keywords)
     else:
@@ -48,8 +55,8 @@ try:
             f_id = input(Const.F_INPUT)
             topic_id = input(Const.T_INPUT)
             try:
-                posts_done = db.get_post_done(topic_id)
-            except IndexError:
+                posts_done = table.get(topic_id)["posts"]
+            except NotFoundError:
                 posts_done = 0
 
             # topic = 'viewtopic.php?f=%s&t=%s' % (f_id, topic_id)
@@ -68,7 +75,8 @@ try:
                 # print("Processing")
                 # phpbb.delete_post_list(target)
             # Put number of posts in the database
-            db.insert_db_topic(topic_id, nb_posts)
+            table.upsert({'topic': topic_id,
+                          'posts': nb_posts - len(target)})
 
         # Treat a forum
         elif int(mode) == 2:
@@ -104,7 +112,11 @@ try:
                     # topic_int = int(m.group('topic'))
 
                     # Read number of posts already done, in the database
-                    posts_done = db.get_post_done(topic.tid)
+                    try:
+                        posts_done = table.get(topic.tid)["posts"]
+                    except NotFoundError:
+                        posts_done = 0
+
                     print("===========================")
                     # Retrieve list of Post objects (not already processed)
                     nb_posts, postlist = phpbb.get_topic_posts_not_done(
@@ -132,16 +144,16 @@ try:
                                   "messages")
                             # print("Processing")
                             # phpbb.delete_post_list(target)
-                            db.insert_db_topic(topic.tid,
-                                               nb_posts - len(target))
+                        table.upsert({'topic': topic.tid,
+                                      'posts': nb_posts - len(target)})
 
         elif int(mode) == 3:
-            db.wipe_db_table()
+            table.drop()
             print("La base de donnée a été nettoyée.")
 
         elif int(mode) == 4:
             topic_id = input(Const.T_INPUT)
-            db.delete_db_row(topic_id)
+            table.delete(topic_id)
             print("Ce topic sera considéré comme"
                   "n'ayant jamais été nettoyé.")
 

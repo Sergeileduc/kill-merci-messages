@@ -168,9 +168,7 @@ try:
         # Forget one topic
         elif mode == 4:
             topic_id = int(input(Const.T_INPUT))
-            sql = f"DELETE FROM {DB_TABLE} WHERE topic = {topic_id}"
-            db.conn.execute(sql)
-            db.conn.commit()
+            table.delete(topic_id)
             print("Ce topic sera considéré comme"
                   "n'ayant jamais été nettoyé.")
 

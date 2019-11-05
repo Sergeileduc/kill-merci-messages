@@ -1,6 +1,4 @@
 requests
 bs4
 dateparser
-sqlite_utils
-
-
+sqlite-utils>=1.12
