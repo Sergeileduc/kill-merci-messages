@@ -8,7 +8,7 @@ from utils.phpbb import PhpBB
 from utils.post import Post, Page, Topic, Viewtopicurl
 from tests.password import host, username, password
 from tests.consts import (PID, REF_PID, FORUM, POST1, DELETE_POST1, PAGEURL,
-                          VIEW_TOPIC1, MESSAGE_TOPIC1,
+                          VIEW_TOPIC1, MESSAGE_TOPIC1, AUTHOR1,
                           VIEW_TOPIC2, MESSAGE_TOPIC2)
 
 
@@ -115,6 +115,16 @@ class TestFonctionGet(unittest.TestCase):
             print(MESSAGE_TOPIC1)
             posts = forum.get_topic_posts_with_user(VIEW_TOPIC1, 1000)
             posts.print_posts_user(n=1)
+
+    def test_select_user_list(self):
+        """Test PostList select_user_list."""
+        forum = PhpBB(host)
+        # forum.setUserAgent(username)
+        if forum.login(username, password):
+            print(MESSAGE_TOPIC1)
+            posts = forum.get_topic_posts_with_user(VIEW_TOPIC1, 1000)
+            user_posts = posts.select_user_list(AUTHOR1)
+            user_posts.print_posts_user()
 
     def test_get_forum_topics(self):
         """Test get_forum_topics()."""

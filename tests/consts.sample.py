@@ -12,6 +12,7 @@ REF_PID = ""  # message text
 
 VIEW_TOPIC1 = "viewtopic.php?f=XXXX&t=YYYY"
 MESSAGE_TOPIC1 = "Le titre du topic f=XXXX&t=YYYY est"
+AUTHOR1 = "foo"
 
 VIEW_TOPIC2 = "viewtopic.php?f=XXXX&t=YYYY"
 MESSAGE_TOPIC2 = "Le titre du topic f=XXXX&t=YYYY est"

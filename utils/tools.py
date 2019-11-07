@@ -24,7 +24,7 @@ def gen_regex1(list):
     """
     reg = '^.{0,2}(' \
         + '|'.join(map(re.escape, list)) \
-        + r').{0,6}!*(:cheer:|:cheer2:|:\\o/:|:hiiii:|:\)|:fdance:|:victory:)*$'
+        + r').{0,6}!*(:cheer:|:cheer2:|:\\o/:|:hiiii:|:\)|:fdance:|:victory:)*$'  # noqa:E501
     return re.compile(reg, re.IGNORECASE)
 
 
@@ -55,25 +55,6 @@ def compute_regex(cfg):
         r"^Merci pour les [1-9]+ numéros.{0,5}$", re.IGNORECASE)
     # regex4 = re.compile(r"merci.{0,7}:cheer2:", re.IGNORECASE)
     return regex1, regex2, regex3
-
-
-# Select posts from one user
-def select_user_list(postslist, username):
-    """Return a list of posts for one specific user.
-
-    Args:
-        postslist (Postlist): list of posts
-        username (str): User
-
-    Returns:
-        Postlist: list of the user posts
-
-    """
-    target_list = []
-    for post in postslist:
-        if post.user == username:
-            target_list.append(post)
-    return target_list
 
 
 # Parse url and get fields

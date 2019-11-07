@@ -154,11 +154,7 @@ class PostList(list):
 
     def select_user_list(self, username):
         """Select messages from "username" in a list of messages."""
-        target_list = PostList()
-        for post in self:
-            if post.user == username:
-                target_list.append(post)
-        return target_list
+        return PostList([p for p in self if p.user == username])
 
 
 class Topic:
