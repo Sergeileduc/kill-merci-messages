@@ -67,3 +67,17 @@ class Browser:
         except KeyError as e:
             print("Key Error code : " + str(e))
             return
+
+    def select_tag(self, url, tag):
+        """Select tag in soup and return dict (name:value)."""
+        soup = self.get_html(url)
+        items = soup.select(tag)
+        return {i['name']: i['value'] for i in items if i.has_attr('value')}
+
+    def post(self, url, **kwargs):
+        """Send POST request using requests."""
+        return self.session.post(url, **kwargs)
+
+    def list_cookies(self):
+        """List session cookies."""
+        return [cookie for cookie in self.session.cookies]
