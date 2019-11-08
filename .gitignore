@@ -4,6 +4,7 @@ build/
 dist/
 .idea/
 utils/__pycache__/
+utils/phpbb_bak.py
 tests/__pycache__/
 tests/consts.py
 tests/password.py
