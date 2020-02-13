@@ -51,8 +51,7 @@ class Post:
         self.url = urlpost
         try:
             pid = f"p{self.id}"
-            html = self.phpBB.browser.get_html(urlpost).find(id=pid)
-            self.html = html
+            self.html = self.phpBB.browser.get_html(urlpost).find(id=pid)
         except HTTPError as e:
             print("KO")
             print(e)
