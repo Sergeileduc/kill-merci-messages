@@ -17,6 +17,10 @@ AUTHOR1 = "foo"
 VIEW_TOPIC2 = "viewtopic.php?f=XXXX&t=YYYY"
 MESSAGE_TOPIC2 = "Le titre du topic f=XXXX&t=YYYY est"
 
+VIEW_TOPIC3 = "viewtopic.php?f=XXXX&t=YYYY"
+MESSAGE_TOPIC3 = "Le titre du topic f=XXXX&t=YYYY est"
+AUTHOR3 = "foo"
+
 PAGEURL = "http://HOST/viewtopic.php?f=XXXX&t=YYYY&start=10"
 
 FORUM = 151  # int
