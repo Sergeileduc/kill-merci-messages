@@ -367,8 +367,9 @@ class Forum:
         start = 0
         n = self.nb_topics
         while n > 0:
+            page_url = self._make_page_url(start)
             try:
-                html = self.phpBB.browser.get_html(self.url)
+                html = self.phpBB.browser.get_html(page_url)
                 # try:
                 #     forum_title = html.find(class_="forum-title").text
                 # except AttributeError:
