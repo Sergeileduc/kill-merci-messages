@@ -85,7 +85,8 @@ try:
                 #     print ("Ok, Exit")
             # Dump number of posts in the database
             table.upsert({'topic': topic_id,
-                          'posts': nb_posts - len(target)})
+                          'posts': nb_posts - len(target)},
+                         pk='topic')
 
         # Treat a forum
         elif mode == 2:
@@ -158,7 +159,8 @@ try:
                             # else:
                             #     print ("Ok, pass")
                         table.upsert({'topic': topic.tid,
-                                      'posts': nb_posts - len(target)})
+                                      'posts': nb_posts - len(target)},
+                                     pk='topic')
 
         # Forget all (wipe database)
         elif mode == 3:
