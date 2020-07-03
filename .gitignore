@@ -18,4 +18,5 @@ Pipfile.lock
 !requirements.txt
 /test*.py
 my_test.py
+parse-date.py
 *.bak

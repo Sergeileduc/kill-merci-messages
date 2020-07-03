@@ -39,10 +39,10 @@ try:
         print("Vous pouvez supprimer les messages ?")
         Join = input('y/n ?\n')
         if Join.lower() == 'yes' or Join.lower() == 'y':
-            Join = input('Tapez votre mot de passe\n')
-            if Join == cfg_dict['password']:
-                print("YOUHOU")
-                phpbb.delete_post_list(post_list)
+            # Join = input('Tapez votre mot de passe\n')
+            # if Join == cfg_dict['password']:
+            #     print("YOUHOU")
+            phpbb.delete_post_list(post_list)
     else:
         print('> Login failed')
     phpbb.logout()

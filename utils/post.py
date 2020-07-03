@@ -2,7 +2,6 @@
 # -*-coding:utf-8 -*-
 """Classes for phpbb forums, topics, messages."""
 
-import dateparser
 import datetime
 import re
 from operator import itemgetter
@@ -264,8 +263,8 @@ class Page:
                 rank = "unknown"
             else:
                 rank = ranks[0].text
-            date = r.find(class_="unread").text.split(',')[0]
-            date = dateparser.parse(date).date()
+            isodate = r.select_one("p > a > time")['datetime']
+            date = datetime.datetime.fromisoformat(isodate).date()
             delta = (datetime.date.today() - date).days
             # out.append((id, text, rank))
             post = Post(id, text=text, rank=rank, date=date,
@@ -288,8 +287,8 @@ class Page:
                 rank = "unknown"
             else:
                 rank = ranks[0].text
-            date = r.find(class_="unread").text.split(',')[0]
-            date = dateparser.parse(date).date()
+            isodate = r.select_one("p > a > time")['datetime']
+            date = datetime.datetime.fromisoformat(isodate).date()
             delta = (datetime.date.today() - date).days
             post = Post(id, text=text, rank=rank, date=date,
                         old=delta, fid=self.fid, user=user)
