@@ -26,7 +26,8 @@ class PhpBB(object):
     delete_form_id = 'confirm'
     reply_url = 'posting.php?mode=reply&f={f}&t={t}'
     edit_url = 'posting.php?mode=edit&f={f}&p={p}'
-    reply_form_id = 'postform'
+    form_id = 'postform'
+    private_mess_url = 'ucp.php?i=pm&mode=compose'
 
     def __init__(self, host):
         """Init object with forum url (host) and Browser object."""
@@ -83,6 +84,8 @@ class PhpBB(object):
         try:
             forum_ucp = urljoin(self.host, ucp_url)
             payload = self.browser.select_tag(forum_ucp, "input")
+            # for key, value in payload.items():
+            #     print(key, value)
             payload['username'] = username
             payload['password'] = password
             time.sleep(1)
@@ -134,11 +137,34 @@ class PhpBB(object):
         return url, payload
 
     def _make_reply_payload(self, url, message):
-        form = self.browser.get_form(url, self.reply_form_id)
+        form = self.browser.get_form(url, self.form_id)
         form['values']['message'] = message
         # form['values']['icon'] = 0
         del form['values']['icon']
         form['values']['post'] = 'Submit'
+        url = urljoin(self.host, form['action'])
+        payload = form['values']
+        return url, payload
+
+    def _make_add_receiver_payload(self, url, receiver):
+        form = self.browser.get_form(url, self.form_id)
+        form['values']['username_list'] = receiver
+        form['values']['add_to'] = "Ajouter"
+        form['values']['addbbcode20'] = 100
+        del form['values']['icon']
+        url = urljoin(self.host, form['action'])
+        payload = form['values']
+        return url, payload
+
+    def _make_private_message_payload(self, url, subject, message):
+        form = self.browser.get_form(url, self.form_id)
+        form['values']['subject'] = subject
+        form['values']['message'] = message
+        form['values']['addbbcode20'] = 100
+        form['values']['address_list[u][8435]'] = "to"
+        form['values']['icon'] = 0
+        # del form['values']['icon']
+        form['values']['post'] = 'Envoyer'
         url = urljoin(self.host, form['action'])
         payload = form['values']
         return url, payload
@@ -158,7 +184,7 @@ class PhpBB(object):
         """Edit (modify) a message in a forum."""
         url = urljoin(self.host, self.edit_url.format(f=forum, p=post))
         try:
-            form = self.browser.get_form(url, self.reply_form_id)
+            form = self.browser.get_form(url, self.form_id)
             form['values']['icon'] = 0
             form['values']['message'] = new_message
             form['values']['post'] = 'Submit'
@@ -211,6 +237,32 @@ class PhpBB(object):
             #     count = max_count - start
             page = Page(pageurl, self.browser.get_html(pageurl))
             pagelist = page.get_page_posts()
+            if not pagelist:
+                break
+            topic.postlist.extend(pagelist)
+            start += 10
+            pageurl = topic.make_topic_page_url(start)
+
+        return topic.postlist
+
+    def get_topic_posts_with_url(self, viewtopic, txt, max_count):
+        start = 0
+
+        # topic executes get html, get nb message and get title on creation
+        topic = Topic(self, viewtopic)
+        topic.print40()
+
+        pageurl = topic.make_topic_page_url(start)
+
+        if topic.nb_messages < max_count:
+            max_count = topic.nb_messages
+        while start < max_count:
+            # if (start + 10) < max_count:
+            #     count = 0
+            # else:
+            #     count = max_count - start
+            page = Page(pageurl, self.browser.get_html(pageurl))
+            pagelist = page.get_page_posts_with_url(txt)
             if not pagelist:
                 break
             topic.postlist.extend(pagelist)
@@ -347,3 +399,21 @@ class PhpBB(object):
                                   # headers=headers,
                                   # params=self.login_mode,
                                   data=payload)
+
+    def send_private_message(self, receiver, subject, message):
+        """Send private message."""
+        url = urljoin(self.host, self.private_mess_url)
+        urlrep1, payload1 = self._make_add_receiver_payload(url, receiver)
+        urlrep2, payload2 = self._make_private_message_payload(url, subject, message)  # noqa: E501
+        time.sleep(2)
+        # Add receiver
+        self.browser.session.post(urlrep1,
+                                  # headers=headers,
+                                  # params=self.login_mode,
+                                  data=payload1)
+
+        # Send message
+        self.browser.session.post(urlrep2,
+                                  # headers=headers,
+                                  # params=self.login_mode,
+                                  data=payload2)

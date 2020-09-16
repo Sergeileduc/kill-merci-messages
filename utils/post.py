@@ -272,6 +272,32 @@ class Page:
             self.pagelist.append(post)
         return self.pagelist
 
+    def get_page_posts_with_url(self, url):
+        """Return list of messages on a topic page containing certain url."""
+        res = self.html.find_all(class_=re.compile("post has-profile"))
+        for r in res:
+            id = r.get('id').replace('post_content', '').replace('p', '')
+            content = r.find(class_="content")
+            links = [a.get("href") for a in content.find_all("a")]
+            text = content.text
+            ranks = r.find_all(class_="profile-rank")
+            if not ranks:
+                rank = "unknown"
+            else:
+                rank = ranks[0].text
+            isodate = r.select_one("p > a > time")['datetime']
+            date = datetime.datetime.fromisoformat(isodate).date()
+            delta = (datetime.date.today() - date).days
+            # out.append((id, text, rank))
+            for link in links:
+                if url in link:
+                    # print(text)
+                    post = Post(id, text=text, rank=rank, date=date,
+                                old=delta, fid=self.fid)
+                    self.pagelist.append(post)
+                    break
+        return self.pagelist
+
     def get_page_posts_with_user(self):
         """Return list of messages (with users name) on a topic page."""
         res = self.html.find_all(class_=re.compile("post has-profile"))

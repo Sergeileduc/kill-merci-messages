@@ -69,26 +69,29 @@ if __name__ == '__main__':
                 else:
                     print("\nValeur incorrect")
 
+            # Treat a topic
             if int(mode) == 1:
                 f_id = input(Const.F_INPUT)
                 topic_id = input(Const.T_INPUT)
 
                 topic = 'viewtopic.php?f=%s&t=%s' % (f_id, topic_id)
 
-                posts = phpbb.get_posts_with_oc_links(topic,
-                                                      int(cfg.max_count))
-                for p in posts[1:]:
-                    p_id = int(p[1])
-                    print('{:>10} {}'.format(p[1], urljoin(cfg.host, p[0])))
-                    print('.........................................')
-                    origin, new_mess = nuke_oc(phpbb, int(f_id), int(p[1]))
-                    old_file.write(origin + '\n')
-                    old_file.write('------------------------------\n')
-                    new_file.write(new_mess + '\n')
-                    new_file.write('------------------------------\n')
-                    # print('-----------------------------------------')
+                posts = phpbb.get_topic_posts_with_url(topic,
+                                                       "http://dl.dctrad.fr",
+                                                       int(cfg.max_count))
 
-                    # phpbb.edit_post(int(f_id), p_id, new_mess)
+                for p in posts[1:]:
+                    # p_id = int(p[1])
+                    print('{:>10} {}'.format(p.id, urljoin(cfg.host, 'viewtopic.php?p={id}#p{id}'.format(id=p.id))))  # noqa: E501
+                    print('.........................................')
+                    origin, new_mess = nuke_oc(phpbb, int(f_id), p.id)
+                    # old_file.write(origin + '\n')
+                    # old_file.write('------------------------------\n')
+                    # new_file.write(new_mess + '\n')
+                    # new_file.write('------------------------------\n')
+
+                    phpbb.edit_post(int(f_id), p.id, new_mess)
+                    print('-----------------------------------------')
 
                 # phpbb.edit_post(12, 323626, new_message)
 
@@ -137,22 +140,24 @@ if __name__ == '__main__':
 
                         topic = 'viewtopic.php?f=%s&t=%s' % (f_id, topic_int)
 
-                        posts = phpbb.get_posts_with_oc_links(
-                            topic, int(cfg.max_count))
+                        posts = phpbb.get_topic_posts_with_url(
+                            topic,
+                            "http://dl.dctrad.fr",
+                            int(cfg.max_count)
+                        )
+
                         for p in posts[1:]:
-                            p_id = int(p[1])
-                            print('{:>10} {}'.format(p[1],
-                                                     urljoin(cfg.host, p[0])))
-                            # print('.........................................')
-                            origin, new_mess = nuke_oc(phpbb,
-                                                       int(f_id),
-                                                       int(p[1]))
+                            print('{:>10} {}'.format(p.id, urljoin(cfg.host, 'viewtopic.php?p={id}#p{id}'.format(id=p.id))))  # noqa: E501
+                            print('.........................................')
+                            origin, new_mess = nuke_oc(phpbb, int(f_id), p.id)
                             # old_file.write(origin + '\n')
                             # old_file.write('------------------------------\n')
                             # new_file.write(new_mess + '\n')
                             # new_file.write('------------------------------\n')
-                            # phpbb.edit_post(int(f_id), p_id, new_mess)
+
+                            phpbb.edit_post(int(f_id), p.id, new_mess)
                             print('-----------------------------------------')
+
         Join = input('Appuyez sur une touche pour quitter\n')
         old_file.close()
         new_file.close()
