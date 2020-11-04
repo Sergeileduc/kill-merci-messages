@@ -9,7 +9,7 @@ from utils.post import PostList
 from utils.settings import Settings
 from utils.consts import Const
 
-CFG_FILE = ".dctrad.cfg"
+CFG_FILE = ".forum.cfg"
 CFG_FORUM = 'dctrad'
 
 
