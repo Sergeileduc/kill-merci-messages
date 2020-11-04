@@ -209,9 +209,9 @@ class PhpBB(object):
         forum = Forum(f, self)
         forum.print_forum_title()
         forum.get_nb_topics()
-        forum.get_forum_topics()
+        topics_list = forum.get_forum_topics()
         forum.print_topics()
-        return forum.get_forum_topics()
+        return topics_list
 
     def get_forum_view_topics(self, f):
         """Test get_forum_viewtopics()."""

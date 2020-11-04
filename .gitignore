@@ -10,6 +10,7 @@ tests/consts.py
 tests/password.py
 dctrad.cfg
 .dctrad.cfg
+.forum.cfg
 Pipfile.lock
 *.spec
 *.pyc
