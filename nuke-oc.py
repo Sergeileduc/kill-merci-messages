@@ -9,7 +9,7 @@ import re
 from urllib.parse import urljoin
 from utils.consts import Const
 
-CFG_FILE = '.dctrad.cfg'
+CFG_FILE = '.forum.cfg'
 cfg_phpbb = 'dctrad'
 
 ex1 = r"(\[url\=http:\/\/dl\.dctrad\.fr\/.*?\])(.*?)(\[\/url\])"
@@ -18,13 +18,15 @@ ex3 = r".*clique[rz]\ sur\ l.*?image[s]?\ pour .*?télécharger.*\n"
 ex4 = r".*t[eé]l[eé]chargeable en cliquant sur l.*?image[s]?.*\n"
 ex5 = r".*ou en cliquant sur l.*?image[s]?.*\n"
 ex6 = r"\[size\=85\]Cliquez sur l.*?image[s]?\.\[\/size\]\n"
+ex7 = r"(http:\/\/dl\.dctrad\.fr\/.*?)(\s|\[)"
 
-regex1 = re.compile(ex1)
-regex2 = re.compile(ex2)
+regex1 = re.compile(ex1, re.IGNORECASE)
+regex2 = re.compile(ex2, re.IGNORECASE)
 regex3 = re.compile(ex3, re.IGNORECASE)
 regex4 = re.compile(ex4, re.IGNORECASE)
 regex5 = re.compile(ex5, re.IGNORECASE)
 regex6 = re.compile(ex6, re.IGNORECASE)
+regex7 = re.compile(ex7, re.IGNORECASE)
 
 
 def replace_message(message):
@@ -37,7 +39,9 @@ def replace_message(message):
     temp3 = re.sub(regex3, '', temp2)
     temp4 = re.sub(regex4, '', temp3)
     temp5 = re.sub(regex5, '', temp4)
-    return re.sub(regex6, '', temp5)
+    temp6 = re.sub(regex6, '', temp5)
+    # return temp6
+    return re.sub(regex7, r"\2", temp6)
 
 
 def nuke_oc(phpbb, f_id, p_id):
@@ -80,7 +84,8 @@ if __name__ == '__main__':
                                                        "http://dl.dctrad.fr",
                                                        int(cfg.max_count))
 
-                for p in posts[1:]:
+                # for p in posts[1:]:
+                for p in posts:
                     # p_id = int(p[1])
                     print('{:>10} {}'.format(p.id, urljoin(cfg.host, 'viewtopic.php?p={id}#p{id}'.format(id=p.id))))  # noqa: E501
                     print('.........................................')
@@ -98,34 +103,22 @@ if __name__ == '__main__':
             # Treat a forum
             elif int(mode) == 2:
                 while True:
-                    choice = input(Const.SECTION_CHOICE)
-                    if int(choice) < 1 or int(choice) > 10:
+                    choice = int(input(Const.SECTION_CHOICE))
+                    if choice < 1 or choice > 10:
                         print("\nValeur incorrect")
                     else:
                         break
-                f_list = ()
-                if int(choice) == 1:
-                    f_list = cfg.rebirth.split(",")
-                elif int(choice) == 2:
-                    f_list = cfg.new52.split(",")
-                elif int(choice) == 3:
-                    f_list = cfg.dcclassic.split(",")
-                elif int(choice) == 4:
-                    f_list = cfg.dchc.split(",")
-                elif int(choice) == 5:
-                    f_list = cfg.vertigo.split(",")
-                elif int(choice) == 6:
-                    f_list = cfg.marvel.split(",")
-                elif int(choice) == 7:
-                    f_list = cfg.indes.split(",")
-                elif int(choice) == 8:
-                    f_list = cfg.divers.split(",")
-                elif int(choice) == 9:
-                    f_list = cfg.all_topics.split(",")
-                elif int(choice) == 10:
-                    f_list = cfg.test_topics.split(",")
-                else:
+
+                try:
+                    # Convert input number into forum section (rebirth, etc...)
+                    # And read config for this forum section
+                    forum_section = Const.SECTION_MAP[choice]
+                    forum_dict = cfg.read_section("forums")
+                    f_list = forum_dict[forum_section].split(",")
+                except KeyError as e:
+                    print(e)
                     print("Mauvaise valeur")
+                    f_list = None
                     quit()
 
                 reg = re.compile(r't=(?P<topic>\d+)')
@@ -134,9 +127,13 @@ if __name__ == '__main__':
                 for f in f_list:
                     topics = phpbb.get_forum_topics(f)
                     f_id = f.split("&start")[0]
+                    print("Processing")
                     for t in topics:
-                        m = re.search(reg, t)
+                        m = re.search(reg, t['url'])
                         topic_int = int(m.group('topic'))
+
+                        if topic_int == 15370:
+                            continue
 
                         topic = 'viewtopic.php?f=%s&t=%s' % (f_id, topic_int)
 
@@ -146,7 +143,8 @@ if __name__ == '__main__':
                             int(cfg.max_count)
                         )
 
-                        for p in posts[1:]:
+                        # for p in posts[1:]:
+                        for p in posts:
                             print('{:>10} {}'.format(p.id, urljoin(cfg.host, 'viewtopic.php?p={id}#p{id}'.format(id=p.id))))  # noqa: E501
                             print('.........................................')
                             origin, new_mess = nuke_oc(phpbb, int(f_id), p.id)

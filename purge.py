@@ -7,7 +7,7 @@ from utils.phpbb import PhpBB
 from utils.settings import Settings
 from utils.consts import Const
 
-CFG_FILE = ".dctrad.cfg"
+CFG_FILE = ".forum.cfg"
 CFG_FORUM = 'dctrad'
 
 
