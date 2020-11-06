@@ -7,7 +7,7 @@ from collections import namedtuple
 from utils.phpbb import PhpBB
 from utils.post import PostList
 from utils.settings import Settings
-from utils.consts import Const
+# from utils.consts import Const
 
 CFG_FILE = ".forum.cfg"
 CFG_FORUM = 'dctrad'
@@ -32,7 +32,7 @@ try:
         print('Login')
         for top in topic_list:
             topic = f'viewtopic.php?f={top.f}&t={top.t}'
-            post_list = phpbb.get_topic_posts(topic, int(cfg_dict['max_count']))
+            post_list = phpbb.get_topic_posts(topic, int(cfg_dict['max_count']))  # noqa: E501
             n = len(post_list)
             print(f"{n} posts dans ce topic")
             print("===================")
