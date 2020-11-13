@@ -13,7 +13,7 @@ from utils import tools
 from utils.consts import Const
 from utils.post import Viewtopicurl
 
-CFG_FILE = ".dctrad.cfg"
+CFG_FILE = ".forum.cfg"
 DB_FILE = ".topics.db"
 CFG_FORUM = "dctrad"
 DB_TABLE = "purged"
