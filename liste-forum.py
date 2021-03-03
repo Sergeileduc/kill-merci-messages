@@ -7,7 +7,7 @@ from utils.phpbb import PhpBB
 from utils.settings import Settings
 from configparser import NoOptionError
 
-CFG_FILE = '.dctrad.cfg'
+CFG_FILE = '.forum.cfg'
 CFG_FORUM = 'dctrad'
 
 try:
@@ -20,7 +20,7 @@ try:
     # Log in
     phpbb = PhpBB(cfg_dict['host'])
     phpbb.login(cfg_dict['username'], cfg_dict['password'])
-    f_list = forum_dict['all_topics'].split(",")
+    f_list = forum_dict['perso'].split(",")
 
     for f in f_list:
         phpbb.get_forum_topics(f)
