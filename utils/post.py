@@ -126,7 +126,7 @@ class PostList(list):
         """Search "merci" messages in list of messages."""
         target_list = PostList()
         for post in self:
-            if post.rank == 'Humain' or post.rank == "unknown":
+            if post.rank in ['Humain', "unknown"]:
                 if pattern1.match(post.text):
                     target_list.append(post)
                 elif pattern2.match(post.text):
@@ -181,7 +181,7 @@ class Topic:
             print(e)
             raise
 
-    def find_topic_title(self):
+    def find_topic_title(self) -> str:
         """Return the topic title."""
         try:
             self.title = self.html.find(class_="topic-title").text
@@ -189,14 +189,14 @@ class Topic:
             self.title = "Unknown title"
         return self.title
 
-    def make_topic_page_url(self, start):
+    def make_topic_page_url(self, start) -> str:
         """Return topic url, with start=XX (several pages)."""
-        pageurl = urljoin(self.phpBB.host,
-                          self.topic_url.format(topic=self.viewtopic,
-                                                start=start))
-        return pageurl
+        return urljoin(
+            self.phpBB.host,
+            self.topic_url.format(topic=self.viewtopic, start=start),
+        )
 
-    def get_nb_posts(self):
+    def get_nb_posts(self) -> int:
         """Return number of messages in a topic."""
         i = 0
         try:
@@ -205,8 +205,7 @@ class Topic:
                 try:
                     # if messages[i] == 'messages' or messages[i] == 'message':
                     # check if 'message' of 'messages'
-                    if (re.match(r"message[s]?", messages[i]) and
-                            messages[i - 1] != "premier"):
+                    if (re.match(r"message[s]?", messages[i]) and messages[i - 1] != "premier"):  # noqa: E501
                         self.messages = int(messages[i - 1])
                         break
                     else:
@@ -228,14 +227,14 @@ class Topic:
 class Page:
     """Class to work with phpbb topic page (i.e. with start=XX)."""
 
-    regex = r"f\=(?P<fid>\d+)&t\=(?P<topic>\d+)&start=(?P<start>\d+)"
+    regex = r"t\=(?P<topic>\d+)&start=(?P<start>\d+)"  # no more f
 
     def __init__(self, url, html):
         """Init a topic page with his url and html code."""
         self.url = url
         self.html = html
         self.pagelist = PostList()
-        self.fid = get_query_field(url, 'f')[0]
+        # self.fid = get_query_field(url, 'f')[0]  # no more f
         self.tid = get_query_field(url, 't')[0]
         self.start = None
 
@@ -248,7 +247,7 @@ class Page:
 
     def _parse_url(self):
         m = re.search(self.regex, self.url)
-        self.fid = int(m.group('fid'))
+        # self.fid = int(m.group('fid'))  # no more f
         self.tid = int(m.group('topic'))
         self.start = int(m.group('start'))
 
@@ -256,19 +255,18 @@ class Page:
         """Return list of messages on a topic page."""
         res = self.html.find_all(class_=re.compile("post has-profile"))
         for r in res:
-            id = r.get('id').replace('post_content', '').replace('p', '')
+            id_ = r.get('id').replace('post_content', '').replace('p', '')
             text = r.find_all(class_="content")[0].text
             ranks = r.find_all(class_="profile-rank")
-            if not ranks:
-                rank = "unknown"
-            else:
-                rank = ranks[0].text
+            rank = ranks[0].text if ranks else "unknown"
             isodate = r.select_one("p > a > time")['datetime']
             date = datetime.datetime.fromisoformat(isodate).date()
             delta = (datetime.date.today() - date).days
             # out.append((id, text, rank))
-            post = Post(id, text=text, rank=rank, date=date,
-                        old=delta, fid=self.fid)
+            post = Post(id_, text=text, rank=rank, date=date,
+                        old=delta,
+                        # fid=self.fid  # no more f
+                        )
             self.pagelist.append(post)
         return self.pagelist
 
@@ -276,15 +274,12 @@ class Page:
         """Return list of messages on a topic page containing certain url."""
         res = self.html.find_all(class_=re.compile("post has-profile"))
         for r in res:
-            id = r.get('id').replace('post_content', '').replace('p', '')
+            id_ = r.get('id').replace('post_content', '').replace('p', '')
             content = r.find(class_="content")
             links = [a.get("href") for a in content.find_all("a")]
             text = content.text
             ranks = r.find_all(class_="profile-rank")
-            if not ranks:
-                rank = "unknown"
-            else:
-                rank = ranks[0].text
+            rank = ranks[0].text if ranks else "unknown"
             isodate = r.select_one("p > a > time")['datetime']
             date = datetime.datetime.fromisoformat(isodate).date()
             delta = (datetime.date.today() - date).days
@@ -292,7 +287,7 @@ class Page:
             for link in links:
                 if url in link:
                     # print(text)
-                    post = Post(id, text=text, rank=rank, date=date,
+                    post = Post(id_, text=text, rank=rank, date=date,
                                 old=delta, fid=self.fid)
                     self.pagelist.append(post)
                     break
@@ -302,21 +297,18 @@ class Page:
         """Return list of messages (with users name) on a topic page."""
         res = self.html.find_all(class_=re.compile("post has-profile"))
         for r in res:
-            id = r.get('id').replace('post_content', '').replace('p', '')
+            id_ = r.get('id').replace('post_content', '').replace('p', '')
             text = r.find_all(class_="content")[0].text
             ranks = r.find_all(class_="profile-rank")
             try:
                 user = r.find(class_="username-coloured").text
             except AttributeError:
                 user = r.find(class_="username").text
-            if not ranks:
-                rank = "unknown"
-            else:
-                rank = ranks[0].text
+            rank = ranks[0].text if ranks else "unknown"
             isodate = r.select_one("p > a > time")['datetime']
             date = datetime.datetime.fromisoformat(isodate).date()
             delta = (datetime.date.today() - date).days
-            post = Post(id, text=text, rank=rank, date=date,
+            post = Post(id_, text=text, rank=rank, date=date,
                         old=delta, fid=self.fid, user=user)
             self.pagelist.append(post)
         return self.pagelist
@@ -344,14 +336,14 @@ class Forum:
             print(e)
 
     def _make_forum_url(self):
-        url = urljoin(self.phpBB.host, self.forum_url.format(self.f))
-        return url
+        """Returns url
+        """
+        return urljoin(self.phpBB.host, self.forum_url.format(self.f))
 
     def _make_page_url(self, start):
         view_forum = self.forum_url.format(self.f)
-        url = urljoin(self.phpBB.host,
-                      self.forum_page.format(forum=view_forum, start=start))
-        return url
+        return urljoin(self.phpBB.host,
+                       self.forum_page.format(forum=view_forum, start=start))
 
     def print_forum_title(self):
         """Print title of sub-forum (self)."""
@@ -445,21 +437,21 @@ class Viewtopicurl:
 
     """
 
-    regex = r"f\=(?P<fid>\d+)&t\=(?P<topic>\d+)"
+    regex = r"t\=(?P<topic>\d+)"  # no more f in urls
 
-    def __init__(self, urlpart=None, fid=None, tid=None):
+    def __init__(self, urlpart=None, fid=None, tid=None):  # TODO remove fid
         """Init with urlpart, or forum id and topic id."""
         self.urlpart = urlpart
-        self.fid = fid
+        self.fid = fid  # TODO : remove fid
         self.tid = tid
 
     def __str__(self):
         """Return formated string of Viewtopic."""
-        template = "{fid:>10} | {tid:>10} | {url:<60.60}"
-        return template.format(fid=self.fid, tid=self.tid, url=self.urlpart)
+        template = "{tid:>10} | {url:<60.60}"  # no more fid in urls
+        return template.format(tid=self.tid, url=self.urlpart)
 
     def parse_url(self):
         """Find forum id and topic id in viewtopic url."""
         m = re.search(self.regex, self.urlpart)
-        self.fid = int(m.group('fid'))
+        # self.fid = int(m.group('fid'))  # there is no more f in topics url.
         self.tid = int(m.group('topic'))
