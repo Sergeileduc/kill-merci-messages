@@ -14,8 +14,7 @@ CFG_FORUM = 'dctrad'
 
 
 Topic = namedtuple('Topic', ['f', 't', 'desc'])
-topic_list = [Topic(147, 7848, 'équipe_DC'),
-              Topic(12, 14511, 'absences'),
+topic_list = [Topic(12, 14511, 'absences'),
               Topic(121, 13388, 'news_média'),
               Topic(119, 13387, "News Comics"),
               ]

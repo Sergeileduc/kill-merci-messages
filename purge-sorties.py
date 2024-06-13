@@ -26,10 +26,10 @@ try:
             target.print_posts_user()
 
             phpbb.delete_post_list(target)
-        else:
-            print('> Login failed')
-        phpbb.logout()
-        phpbb.close()
+    else:
+        print('> Login failed')
+    phpbb.logout()
+    phpbb.close()
 except KeyboardInterrupt:
     print("\nAu revoir")
     sys.exit(0)

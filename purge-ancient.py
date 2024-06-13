@@ -2,13 +2,14 @@
 # -*-coding:utf-8 -*-
 """Delete some messages in a phpbb forum topic."""
 
+
 import sys
 from utils.phpbb import PhpBB
 from utils.post import PostList
 from utils.settings import Settings
 from utils.consts import Const
 
-CFG_FILE = ".dctrad.cfg"
+CFG_FILE = ".forum.cfg"
 CFG_FORUM = 'dctrad'
 
 
@@ -37,11 +38,8 @@ try:
         print("===================")
         print("TOUS LES MESSAGES précédents seront SUPPRIMÉS !!!")
         print("Vous pouvez supprimer les messages ?")
-        Join = input('y/n ?\n')
-        if Join.lower() == 'yes' or Join.lower() == 'y':
-            # Join = input('Tapez votre mot de passe\n')
-            # if Join == cfg_dict['password']:
-            #     print("YOUHOU")
+        resp = input('y/n ?\n')
+        if resp.lower() in ['yes', 'y']:
             phpbb.delete_post_list(post_list)
     else:
         print('> Login failed')
