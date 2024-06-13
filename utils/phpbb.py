@@ -46,7 +46,7 @@ class PhpBB(object):
             print(e)
             sys.exit(1)
 
-    def is_logged(self):
+    def is_logged(self) -> bool:
         """Check if logged in."""
         u = self._get_user_id()
         if u != 1:
@@ -56,7 +56,7 @@ class PhpBB(object):
             print(f"login failed : {str(u)}")
             return False
 
-    def is_logged_out(self):
+    def is_logged_out(self) -> bool:
         """Check if logged out."""
         u = self._get_user_id()
         if u != 1:
@@ -66,20 +66,19 @@ class PhpBB(object):
             print(f"Signed out : {str(u)}")
             return False
 
-    def _get_user_id(self):
+    def _get_user_id(self) -> int:
         cookies = self.browser.list_cookies()
         for cookie in cookies:
             if re.search(cookie_u_pattern, cookie.name):
                 return int(cookie.value)
 
-    def _get_sid(self):
+    def _get_sid(self) -> str:
         cookies = self.browser.list_cookies()
         for cookie in cookies:
             if re.search(cookie_sid_pattern, cookie.name):
-                sid = cookie.value
-                return sid
+                return cookie.value  # return sid
 
-    def login(self, username, password):
+    def login(self, username: str, password: str):
         """Log in phpBB forum."""
         try:
             forum_ucp = urljoin(self.host, ucp_url)
@@ -89,7 +88,9 @@ class PhpBB(object):
             payload['username'] = username
             payload['password'] = password
             time.sleep(1)
-            self.browser.post(forum_ucp, params=login_mode, data=payload)
+            self.browser.post(forum_ucp,
+                              params=login_mode,
+                              data=payload)
             return self.is_logged()
 
         except HTTPError as e:
@@ -111,7 +112,7 @@ class PhpBB(object):
             print(e)
             return False
 
-    def close(self):
+    def close(self) -> None:
         """Close request session (HTTP connection)."""
         try:
             self.browser.session.close()
@@ -169,7 +170,7 @@ class PhpBB(object):
         payload = form['values']
         return url, payload
 
-    def get_post_text(self, postid):
+    def get_post_text(self, postid) -> None:
         """Get text of a post."""
         post = Post(postid, self)
         post.get_text()
@@ -308,10 +309,10 @@ class PhpBB(object):
                 topic.postlist.extend(pagelist)
                 start += 10
                 pageurl = topic.make_topic_page_url(start)
-            return topic.nb_messages, topic.postlist
         else:
             print("already_done")
-            return topic.nb_messages, topic.postlist
+
+        return topic.nb_messages, topic.postlist
 
     # Get User on a topic
     def get_user_topic_posts(self, viewtopic, max_count):
@@ -344,7 +345,7 @@ class PhpBB(object):
         """Delete one message. Send proper request."""
         try:
             url_get = post.make_delete_req_url(self.host)
-            print("delete : " + url_get)
+            print(f"delete : {url_get}")
 
             url_post, payload = self._make_delete_confirm(url_get)
             time.sleep(1)
@@ -354,7 +355,7 @@ class PhpBB(object):
                                       data=payload)
         except HTTPError as e:
             print(e)
-            print("HTTPError with post : " + post.id)
+            print(f"HTTPError with post : {post.id}")
         except TypeError as e2:
             print(e2)
 
@@ -392,8 +393,8 @@ class PhpBB(object):
         url = urljoin(self.host, self.reply_url.format(f=forum, t=topic))
 
         urlrep, payload = self._make_reply_payload(url, message)
-        print(urlrep)
-        print(payload)
+        # print(urlrep)
+        # print(payload)
         time.sleep(2)
         self.browser.session.post(urlrep,
                                   # headers=headers,
