@@ -1,5 +1,5 @@
 {
-    "editor.rulers": [ 80 ],
+    "editor.rulers": [ 80, 100 ],
     "python.pythonPath": "C:\\Users\\serge\\AppData\\Local\\Programs\\Python\\Python37\\python.exe",
     "python.testing.pytestArgs": [
         "tests"
