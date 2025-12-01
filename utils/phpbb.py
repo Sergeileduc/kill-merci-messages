@@ -70,7 +70,10 @@ class PhpBB(object):
         cookies = self.browser.list_cookies()
         for cookie in cookies:
             if re.search(cookie_u_pattern, cookie.name):
+                if cookie.value is None:
+                    raise ValueError("Cookie user_id sans valeur")
                 return int(cookie.value)
+        raise ValueError("Cookie user_id introuvable")
 
     def _get_sid(self) -> str:
         cookies = self.browser.list_cookies()
